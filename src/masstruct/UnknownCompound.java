@@ -47,6 +47,52 @@ public class UnknownCompound {
     private Double PPM = 10.0;
     private Double mz_abs = 0.1;
     private String sortedQuery, unsortedQuery;
+    /**
+     * Database related values
+     */
+    private static String HOST;
+    private static String DATABASE;
+    private static String DATABASE_DRIVER_JAVA;
+    private static String DB_USER;
+    private static String DB_PASSWORD;
+    /**
+     * Table MZ_CLUSTER related values
+     */
+    private static String TAB_MZ_CLUSTER;
+    private static String COL_MZCL_ID;
+    private static String COL_MIN_MZ;
+    private static String COL_MAX_MZ;
+    /**
+     * Table COMPOUND related values
+     */
+    private static String TAB_COMPOUND;
+    private static String COL_COMP_ID;
+    private static String COL_MOL_STRUCTURE;
+    private static String COL_EXACT_MASS;
+    private static String COL_INCHI_KEY_1;
+    /**
+     * Table SUBSTANCE related values
+     */
+    private static String TAB_SUBSTANCE;
+    private static String COL_COMPOUND_ID;
+    private static String COL_LIBRARY_ID;
+    private static String COL_ACCESSION;
+    /**
+     * Table LIBRARY related values
+     */
+    private static String TAB_LIBRARY;
+    private static String COL_LIBR_ID;
+    private static String COL_LIBRARY_NAME;
+    /**
+     * Table MCS related values
+     */
+    private static String TAB_MCS;
+    private static String COL_MCS_STRUCTURE;
+    private static String COL_MZ_CLUSTER_ID;
+    /**
+     * Database entries searched from
+     */
+    private static String FAVORITE_CHEM_DB;
 
     /**
      * Constructor for an unknown compound spectrum
@@ -57,6 +103,7 @@ public class UnknownCompound {
     public UnknownCompound(WrapperSpectrum ws, Configuration config) {
         this.UNKNOWN = ws;
         this.config = config;
+        setVariables();
         this.CONN = connectToDatabase();
     }
 
@@ -70,6 +117,7 @@ public class UnknownCompound {
     public UnknownCompound(WrapperSpectrum ws, Double ppm, Configuration config) {
         this.UNKNOWN = ws;
         this.config = config;
+        setVariables();
         this.CONN = connectToDatabase();
         this.PPM = ppm;
     }
@@ -85,6 +133,7 @@ public class UnknownCompound {
     public UnknownCompound(WrapperSpectrum ws, Double ppm, Vector<String> databasesToSearchIn, Configuration config) {
         this.UNKNOWN = ws;
         this.config = config;
+        setVariables();
         this.CONN = connectToDatabase();
         this.PPM = ppm;
         this.databases = databasesToSearchIn;
@@ -126,35 +175,23 @@ public class UnknownCompound {
      */
     private Connection connectToDatabase() {
 
-        String DbDrv = null, DbUrl = null, User = null, Passwd = null, DataBase = null;
         Connection cn = null;
 
-        try {
-            DbUrl = config.getStringValue("HOST");
-            DbDrv = config.getStringValue("DATABASE_DRIVER_JAVA");
-            User = config.getStringValue("DB_USER");
-            Passwd = config.getStringValue("DB_PASSWORD");
-            DataBase = config.getStringValue("DATABASE");
-        } catch (Exception ex) {
-            System.err.println("Could not read config file.");
-            System.err.println(ex);
-        }
-
-        if (null != DbDrv
-                && 0 < DbDrv.length()
-                && null != DbUrl
-                && 0 < DbUrl.length()) {
+        if (null != DATABASE_DRIVER_JAVA
+                && 0 < DATABASE_DRIVER_JAVA.length()
+                && null != HOST
+                && 0 < HOST.length()) {
 
 
             try {
                 // Select fitting database driver and connect:
                 try {
-                    Class.forName(DbDrv);
+                    Class.forName(DATABASE_DRIVER_JAVA);
                 } catch (ClassNotFoundException cnfe) {
                     System.err.println("Class not Found " + cnfe.getLocalizedMessage());
                 }
                 try {
-                    cn = DriverManager.getConnection("jdbc:postgresql://" + DbUrl + "/" + DataBase + "/test?user=" + User + "&password=" + Passwd);
+                    cn = DriverManager.getConnection("jdbc:postgresql://" + HOST + "/" + DATABASE + "/test?user=" + DB_USER + "&password=" + DB_PASSWORD);
                 } catch (SQLException sqle) {
                     System.out.println("Couldn't connect: print out a stack trace and exit.");
                     sqle.printStackTrace();
@@ -194,59 +231,106 @@ public class UnknownCompound {
      */
     private String SortedQuery() {
 
-        String query = "SELECT"
-                + " substance.accession, Score"
-                + " FROM " + this.config.getStringValue("TAB_SUBSTANCE")
-                + ", " + this.config.getStringValue("TAB_COMPOUND")
-                + ", " + this.config.getStringValue("TAB_LIBRARY")
-                + ", (SELECT "+this.config.getStringValue("COL_INCHI_KEY_1")+","
-                + " COUNT(DISTINCT MCS.cluster_id) AS Score"
-                + " FROM " 
-                + this.config.getStringValue("TAB_SUBSTANCE")+", "
-                + this.config.getStringValue("TAB_LIBRARY")+ ","
-                + " (SELECT MIN(compound_id) AS firstcompound_id"
-                + " FROM " + this.config.getStringValue("TAB_COMPOUND")
-                + " WHERE exact_mass BETWEEN " + calcMinValue(this.UNKNOWN.getExactMass())
-                + " AND " + calcMaxValue(this.UNKNOWN.getExactMass())
-                + " GROUP BY "+this.config.getStringValue("COL_INCHI_KEY_1")+
-                ") AS firstcandidate, "
-                + this.config.getStringValue("compoundtable") + " AS Candidates"
-                + " LEFT OUTER JOIN (SELECT mcs.mcs_structure,"
-                + " mz_cluster.cluster_id"
-                + " FROM mcs,"
-                + " mz_cluster"
-                + " WHERE mcs.mz_cluster_id = mz_cluster.cluster_id"
-                + " AND (";
+        String query = "SELECT "
+                + TAB_SUBSTANCE + "." + COL_ACCESSION
+                + ", Score"
+                + " FROM "
+                + TAB_SUBSTANCE + ", "
+                + TAB_COMPOUND + ", "
+                + TAB_LIBRARY + ", "
+                +       "(SELECT "
+                +       COL_INCHI_KEY_1 + ","
+                +       " COUNT(DISTINCT MCS." + COL_MZCL_ID + ") AS Score"
+                +       " FROM "
+                +       TAB_SUBSTANCE + ", "
+                +       TAB_LIBRARY + ", "
+                +           "(SELECT MIN(" + COL_COMP_ID + ") AS firstcompound_id"
+                +          " FROM " + TAB_COMPOUND
+                +           " WHERE " + COL_EXACT_MASS + " BETWEEN " + calcMinValue(this.UNKNOWN.getExactMass())
+                +           " AND " + calcMaxValue(this.UNKNOWN.getExactMass())
+                +          " GROUP BY " + COL_INCHI_KEY_1
+                +           ") AS firstcandidate, "
+                +       TAB_COMPOUND + " AS Candidates"
+                +   " LEFT OUTER JOIN "
+                +       "(SELECT "
+                +       TAB_MCS + "." + COL_MCS_STRUCTURE + ", "
+                +       TAB_MZ_CLUSTER + "." + COL_MZCL_ID
+                +       " FROM " + TAB_MCS + ", "
+                +       TAB_MZ_CLUSTER
+                +       " WHERE " + TAB_MCS + "." + COL_MZ_CLUSTER_ID + " = " + TAB_MZ_CLUSTER + "." + COL_MZCL_ID
+                +       " AND (";
         for (Peak peak : this.UNKNOWN.getPeakList()) {
 
             if (peak.equals(this.UNKNOWN.getPeakList().lastElement())) {
-                query += "(min >= "
+                query += "(" + COL_MIN_MZ + " >= "
                         + calcMinValue(peak.getMass())
-                        + " AND max <= "
+                        + " AND " + COL_MAX_MZ + " <= "
                         + calcMaxValue(peak.getMass())
-                        + "))) AS MCS "
-                        + " ON (MCS.mcs_structure <= Candidates.mol_structure)"
-                        + " WHERE substance.compound_id = firstcompound_id"
-                        + " AND   substance.library_id = library.library_id"
-                        + " AND   library_name = 'pubchem'"
-                        + " AND   Candidates.compound_id = firstcompound_id"
-                        + " GROUP BY accession, inchi_key_1"
-                        + " ORDER BY Score DESC) AS results"
-                        + " WHERE exact_mass BETWEEN " + calcMinValue(this.UNKNOWN.getExactMass())
+
+                        +           "))) AS MCS "
+                        +   "ON (MCS." + COL_MCS_STRUCTURE + " <= Candidates." + COL_MOL_STRUCTURE + ")"
+                        +       " WHERE " + TAB_SUBSTANCE + "." + COL_COMPOUND_ID + " = firstcompound_id"
+                        +       " AND   " + TAB_SUBSTANCE + "." + COL_LIBRARY_ID + " = " + TAB_LIBRARY + "." + COL_LIBR_ID
+                        +       " AND   " + COL_LIBRARY_NAME + " = '" + FAVORITE_CHEM_DB + "'"
+                        +       " AND   Candidates." + COL_COMP_ID + " = firstcompound_id"
+                        +       " GROUP BY " + COL_ACCESSION + ", " + COL_INCHI_KEY_1
+                        +       " ORDER BY Score DESC) AS results"
+                        + " WHERE " + COL_EXACT_MASS + " BETWEEN " + calcMinValue(this.UNKNOWN.getExactMass())
                         + " AND " + calcMaxValue(this.UNKNOWN.getExactMass())
-                        + " AND substance.compound_id = compound.compound_id"
-                        + " AND substance.library_id = library.library_id"
-                        + " AND library_name = 'pubchem'"
-                        + " AND " + this.config.getStringValue("compoundtable") + ".inchi_key_1 = results.inchi_key_1;";
+                        + " AND " + TAB_SUBSTANCE + "." + COL_COMPOUND_ID + " = " + TAB_COMPOUND + "." + COL_COMP_ID
+                        + " AND " + TAB_SUBSTANCE + "." + COL_LIBRARY_ID + " = " + TAB_LIBRARY + "." + COL_LIBR_ID
+                        + " AND " + COL_LIBRARY_NAME + " = '" + FAVORITE_CHEM_DB + "'"
+                        + " AND " + TAB_COMPOUND + "." + COL_INCHI_KEY_1 + " = results." + COL_INCHI_KEY_1 + ";";
             } else {
-                query += "(min >= "
+                query += "(" + COL_MIN_MZ + " >= "
                         + calcMinValue(peak.getMass())
-                        + " AND max <= "
+                        + " AND " + COL_MAX_MZ + " <= "
                         + calcMaxValue(peak.getMass())
                         + ") OR ";
             }
         }
         return query;
+    }
+
+    private void setVariables() {
+        try {
+
+            HOST = this.config.getStringValue("HOST");
+            DATABASE = this.config.getStringValue("DATABASE");
+            DATABASE_DRIVER_JAVA = this.config.getStringValue("DATABASE_DRIVER_JAVA");
+            DB_USER = this.config.getStringValue("DB_USER");
+            DB_PASSWORD = this.config.getStringValue("DB_PASSWORD");
+
+            TAB_MZ_CLUSTER = this.config.getStringValue("TAB_MZ_CLUSTER");
+            COL_MZCL_ID = this.config.getStringValue("COL_MZCL_ID");
+            COL_MIN_MZ = this.config.getStringValue("COL_MIN_MZ");
+            COL_MAX_MZ = this.config.getStringValue("COL_MAX_MZ");
+
+            TAB_COMPOUND = this.config.getStringValue("TAB_COMPOUND");
+            COL_COMP_ID = this.config.getStringValue("COL_COMP_ID");
+            COL_MOL_STRUCTURE = this.config.getStringValue("COL_MOL_STRUCTURE");
+            COL_EXACT_MASS = this.config.getStringValue("COL_EXACT_MASS");
+            COL_INCHI_KEY_1 = this.config.getStringValue("COL_INCHI_KEY_1");
+
+            TAB_SUBSTANCE = this.config.getStringValue("TAB_SUBSTANCE");
+            COL_COMPOUND_ID = this.config.getStringValue("COL_COMPOUND_ID");
+            COL_LIBRARY_ID = this.config.getStringValue("COL_LIBRARY_ID");
+            COL_ACCESSION = this.config.getStringValue("COL_ACCESSION");
+
+            TAB_LIBRARY = this.config.getStringValue("TAB_LIBRARY");
+            COL_LIBR_ID = this.config.getStringValue("COL_LIBR_ID");
+            COL_LIBRARY_NAME = this.config.getStringValue("COL_LIBRARY_NAME");
+
+            TAB_MCS = this.config.getStringValue("TAB_MCS");
+            COL_MCS_STRUCTURE = this.config.getStringValue("COL_MCS_STRUCTURE");
+            COL_MZ_CLUSTER_ID = this.config.getStringValue("COL_MZ_CLUSTER_ID");
+
+            FAVORITE_CHEM_DB = this.config.getStringValue("FAVORITE_CHEM_DB");
+
+        } catch (Exception e) {
+            System.err.println("Couldn't read configuration file.");
+            System.err.println(e.getLocalizedMessage());
+        }
     }
 
     public String getSortedQuery() {
