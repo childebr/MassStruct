@@ -43,10 +43,9 @@ public class UnknownCompound {
     private HashMap<String, Double> SortedCandidates = new HashMap<String, Double>();
     private Configuration config = null;
     private Connection CONN;
-    private Integer candidatesAmount = 0;
     private Double PPM = 10.0;
-    private Double mz_abs = 0.1;
-    private String sortedQuery, unsortedQuery;
+    private Double MZ_ABS = 0.1;
+    private String SORTED_QUERY;
     /**
      * Database related values
      */
@@ -231,7 +230,7 @@ public class UnknownCompound {
      */
     private String SortedQuery() {
 
-        String query = "SELECT "
+        this.SORTED_QUERY = "SELECT "
                 + TAB_SUBSTANCE + "." + COL_ACCESSION
                 + ", Score"
                 + " FROM "
@@ -262,10 +261,10 @@ public class UnknownCompound {
         for (Peak peak : this.UNKNOWN.getPeakList()) {
 
             if (peak.equals(this.UNKNOWN.getPeakList().lastElement())) {
-                query += "(" + COL_MIN_MZ + " >= "
-                        + calcMinValue(peak.getMass())
-                        + " AND " + COL_MAX_MZ + " <= "
-                        + calcMaxValue(peak.getMass())
+                this.SORTED_QUERY   += "(" + COL_MIN_MZ + " >= "
+                                    + calcMinValue(peak.getMass())
+                                    + " AND " + COL_MAX_MZ + " <= "
+                                    + calcMaxValue(peak.getMass())
 
                         +           "))) AS MCS "
                         +   "ON (MCS." + COL_MCS_STRUCTURE + " <= Candidates." + COL_MOL_STRUCTURE + ")"
@@ -282,14 +281,14 @@ public class UnknownCompound {
                         + " AND " + COL_LIBRARY_NAME + " = '" + FAVORITE_CHEM_DB + "'"
                         + " AND " + TAB_COMPOUND + "." + COL_INCHI_KEY_1 + " = results." + COL_INCHI_KEY_1 + ";";
             } else {
-                query += "(" + COL_MIN_MZ + " >= "
-                        + calcMinValue(peak.getMass())
-                        + " AND " + COL_MAX_MZ + " <= "
-                        + calcMaxValue(peak.getMass())
-                        + ") OR ";
+                this.SORTED_QUERY   += "(" + COL_MIN_MZ + " >= "
+                                    + calcMinValue(peak.getMass())
+                                    + " AND " + COL_MAX_MZ + " <= "
+                                    + calcMaxValue(peak.getMass())
+                                    + ") OR ";
             }
         }
-        return query;
+        return this.SORTED_QUERY;
     }
 
     private void setVariables() {
@@ -334,18 +333,14 @@ public class UnknownCompound {
     }
 
     public String getSortedQuery() {
-        return this.sortedQuery;
+        return this.SORTED_QUERY;
     }
 
-    public String getUnSortedQuery() {
-        return this.unsortedQuery;
-    }
-
-    public String getCorrectCandidateKEGGID() {
+    public String getKEGGID() {
         return this.UNKNOWN.getKEGG();
     }
 
-    public String getCorrectCandidatePUBCHEMID() {
+    public String getPUBCHEMID() {
         return this.UNKNOWN.getCID() + "";
     }
 
@@ -353,12 +348,8 @@ public class UnknownCompound {
         return this.UNKNOWN;
     }
 
-    public String getCorrectCandidateName() {
+    public String getCompoundName() {
         return this.UNKNOWN.getTrivialName();
-    }
-
-    public int getAmountOfCandidates() {
-        return this.candidatesAmount;
     }
 
     public boolean setDatabases(String db) {
@@ -371,10 +362,10 @@ public class UnknownCompound {
     }
 
     private Double calcMinValue(Double d) {
-        return d - PPMTool.getPPMDeviation(d, this.PPM) - this.mz_abs;
+        return d - PPMTool.getPPMDeviation(d, this.PPM) - this.MZ_ABS;
     }
 
     private Double calcMaxValue(Double d) {
-        return d + PPMTool.getPPMDeviation(d, this.PPM) + this.mz_abs;
+        return d + PPMTool.getPPMDeviation(d, this.PPM) + this.MZ_ABS;
     }
 }
