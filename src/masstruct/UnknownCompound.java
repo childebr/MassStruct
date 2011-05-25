@@ -294,37 +294,37 @@ public class UnknownCompound {
     private void setVariables() {
         try {
 
-            HOST = this.config.getStringValue("HOST");
-            DATABASE = this.config.getStringValue("DATABASE");
-            DATABASE_DRIVER_JAVA = this.config.getStringValue("DATABASE_DRIVER_JAVA");
-            DB_USER = this.config.getStringValue("DB_USER");
-            DB_PASSWORD = this.config.getStringValue("DB_PASSWORD");
+            HOST                    = this.config.getStringValue("HOST");
+            DATABASE                = this.config.getStringValue("DATABASE");
+            DATABASE_DRIVER_JAVA    = this.config.getStringValue("DATABASE_DRIVER_JAVA");
+            DB_USER                 = this.config.getStringValue("DB_USER");
+            DB_PASSWORD             = this.config.getStringValue("DB_PASSWORD");
 
-            TAB_MZ_CLUSTER = this.config.getStringValue("TAB_MZ_CLUSTER");
-            COL_MZCL_ID = this.config.getStringValue("COL_MZCL_ID");
-            COL_MIN_MZ = this.config.getStringValue("COL_MIN_MZ");
-            COL_MAX_MZ = this.config.getStringValue("COL_MAX_MZ");
+            TAB_MZ_CLUSTER          = this.config.getStringValue("TAB_MZ_CLUSTER");
+            COL_MZCL_ID             = this.config.getStringValue("COL_MZCL_ID");
+            COL_MIN_MZ              = this.config.getStringValue("COL_MIN_MZ");
+            COL_MAX_MZ              = this.config.getStringValue("COL_MAX_MZ");
 
-            TAB_COMPOUND = this.config.getStringValue("TAB_COMPOUND");
-            COL_COMP_ID = this.config.getStringValue("COL_COMP_ID");
-            COL_MOL_STRUCTURE = this.config.getStringValue("COL_MOL_STRUCTURE");
-            COL_EXACT_MASS = this.config.getStringValue("COL_EXACT_MASS");
-            COL_INCHI_KEY_1 = this.config.getStringValue("COL_INCHI_KEY_1");
+            TAB_COMPOUND            = this.config.getStringValue("TAB_COMPOUND");
+            COL_COMP_ID             = this.config.getStringValue("COL_COMP_ID");
+            COL_MOL_STRUCTURE       = this.config.getStringValue("COL_MOL_STRUCTURE");
+            COL_EXACT_MASS          = this.config.getStringValue("COL_EXACT_MASS");
+            COL_INCHI_KEY_1         = this.config.getStringValue("COL_INCHI_KEY_1");
 
-            TAB_SUBSTANCE = this.config.getStringValue("TAB_SUBSTANCE");
-            COL_COMPOUND_ID = this.config.getStringValue("COL_COMPOUND_ID");
-            COL_LIBRARY_ID = this.config.getStringValue("COL_LIBRARY_ID");
-            COL_ACCESSION = this.config.getStringValue("COL_ACCESSION");
+            TAB_SUBSTANCE           = this.config.getStringValue("TAB_SUBSTANCE");
+            COL_COMPOUND_ID         = this.config.getStringValue("COL_COMPOUND_ID");
+            COL_LIBRARY_ID          = this.config.getStringValue("COL_LIBRARY_ID");
+            COL_ACCESSION           = this.config.getStringValue("COL_ACCESSION");
 
-            TAB_LIBRARY = this.config.getStringValue("TAB_LIBRARY");
-            COL_LIBR_ID = this.config.getStringValue("COL_LIBR_ID");
-            COL_LIBRARY_NAME = this.config.getStringValue("COL_LIBRARY_NAME");
+            TAB_LIBRARY             = this.config.getStringValue("TAB_LIBRARY");
+            COL_LIBR_ID             = this.config.getStringValue("COL_LIBR_ID");
+            COL_LIBRARY_NAME        = this.config.getStringValue("COL_LIBRARY_NAME");
 
-            TAB_MCS = this.config.getStringValue("TAB_MCS");
-            COL_MCS_STRUCTURE = this.config.getStringValue("COL_MCS_STRUCTURE");
-            COL_MZ_CLUSTER_ID = this.config.getStringValue("COL_MZ_CLUSTER_ID");
+            TAB_MCS                 = this.config.getStringValue("TAB_MCS");
+            COL_MCS_STRUCTURE       = this.config.getStringValue("COL_MCS_STRUCTURE");
+            COL_MZ_CLUSTER_ID       = this.config.getStringValue("COL_MZ_CLUSTER_ID");
 
-            FAVORITE_CHEM_DB = this.config.getStringValue("FAVORITE_CHEM_DB");
+            FAVORITE_CHEM_DB        = this.config.getStringValue("FAVORITE_CHEM_DB");
 
         } catch (Exception e) {
             System.err.println("Couldn't read configuration file.");
