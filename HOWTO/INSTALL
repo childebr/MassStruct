@@ -1,0 +1,64 @@
+# This file is written to explain how to get Training.R and .jar to work.
+#
+#
+#
+# First of all you have to install a Debian or Ubuntu Linux i386 or x64 depending on your system.
+#
+# [Debian]
+# You can get a Debian Distribution by downloading their disk image on http://www.debian.org/distrib/index.en.html
+# 
+# [Ubuntu]
+# You can get a Ubuntu Distribution by downloading their disk image on http://www.ubuntu.com/download
+# 
+# 
+# 
+# If you are finished with installing a Linux system you have to install some other packages to make sure R and Java is running.
+#
+# [Ubuntu/Debian]
+# 
+# Open a terminal by pressing Ctrl + Alt + T or Select Terminal from the application menu -> Point accessories.
+# Make sure your user is contained in the /etc/sudoers file. Check this by typing:
+
+sudo cat /etc/sudoers
+
+# Type in your password!
+# If you see the content of this file you are listed as a sudo user.
+# If not ask an administrator to add your user or to install the following packages.
+#
+# Type in the following command to install some packages which are needed to run the both scripts Training.R and .jar
+# Open a terminal and type:
+
+sudo apt-get install r-base build-essential libpq-dev 
+
+# [explanation]
+# R package (r-base)
+# compiling and build tools (build-essential)
+# library definitions for R to compile PostgreSQL package (libpq-dev)
+
+# Starting R the first time you have to install R packages which are needed to connect to a PostgreSQL database server and
+# to use special molecule functions of the rcdk.
+# Open a terminal an type:
+
+R
+
+# R console environment will be loaded and looks like this:
+
+R version 2.12.1 (2010-12-16)
+Copyright (C) 2010 The R Foundation for Statistical Computing
+ISBN 3-900051-07-0
+Platform: your platform
+
+...
+
+> 
+
+# Type in the following commands to install needed packages
+
+install.packages('DBI')
+install.packages('RPostgreSQL')
+install.packages('rcdk')
+
+
+# if everything worked fine you are now ready to run those two scripts.
+
+
